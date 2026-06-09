@@ -1,0 +1,50 @@
+# ExploreRAG — Knowledge Base + RAG Backend
+# ============================================
+
+# Web framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
+# Database
+sqlalchemy[asyncio]>=2.0.23
+asyncpg>=0.29.0
+# Alembic runs migrations through SQLAlchemy's synchronous engine.
+psycopg2-binary>=2.9.9
+alembic>=1.12.0
+
+# Vector store
+chromadb>=0.4.22
+
+# Embeddings & reranking
+sentence-transformers>=2.2.2
+
+# Document parsing (Docling — default)
+docling>=2.0.0
+# Scan-profile routing, bounded PDF validation, and selective mixed-PDF OCR.
+pypdf>=5.0.0,<7.0.0
+# LangChain orchestration.  These packages are pinned as a compatible 1.x
+# family because this project implements custom adapters for its Qwen, BGE,
+# Chroma and LightRAG services.  Do not upgrade one of them in isolation.
+langchain==1.3.14
+langchain-core==1.5.3
+langchain-text-splitters==1.1.2
+# Full evaluation runs use the Ragas 0.4 collections API.  It is a runtime
+# dependency because evaluation runs execute inside the backend service.
+ragas==0.4.3
+
+# LLM providers
+openai>=1.0.0
+
+# Knowledge Graph (LightRAG)
+# ``aquery_data`` is used for structured graph evidence, rather than a
+# LightRAG-generated answer.  Keep this compatible API range explicit.
+lightrag-hku>=1.5.5,<1.6
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+httpx>=0.25.0
+aiofiles>=23.2.1
+Pillow>=10.0.0

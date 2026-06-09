@@ -1,0 +1,35 @@
+# ExploreRAG — local development services only (PostgreSQL + ChromaDB)
+# Usage: docker compose -f docker-compose.services.yml up -d
+
+services:
+  postgres:
+    image: postgres:15.19-alpine
+    container_name: explorerag-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-explorerag}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-explorerag}
+    ports:
+      - "127.0.0.1:${POSTGRES_DEV_PORT:-5433}:5432"
+    volumes:
+      - explorerag_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  chromadb:
+    image: chromadb/chroma:1.5.9
+    container_name: explorerag-chromadb
+    ports:
+      - "127.0.0.1:${CHROMA_DEV_PORT:-8002}:8000"
+    volumes:
+      - explorerag_chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+
+volumes:
+  explorerag_postgres_data:
+  explorerag_chroma_data:

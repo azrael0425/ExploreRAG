@@ -1,0 +1,60 @@
+# ============================================================
+# ExploreRAG Backend — Multi-stage Docker build
+# ============================================================
+
+# Stage 1: Install Python dependencies
+FROM python:3.11-slim AS deps
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc g++ \
+    libpq-dev \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY backend/requirements.txt .
+# Large ML dependency metadata and wheels can take longer than pip's default
+# 15-second read timeout. Cache downloads between retrying Docker builds.
+ARG PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --index-url "${PIP_INDEX_URL}" --retries 5 --timeout 120 -r requirements.txt
+
+
+# Stage 2: Runtime image. Retrieval models are downloaded on first document
+# processing rather than during image build, keeping the development service
+# start reliable on slower networks.
+FROM python:3.11-slim AS runtime
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    libgl1 \
+    libglib2.0-0 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Source metadata changes every commit, so keep it after the expensive system
+# dependency layer to preserve Docker cache reuse.
+ARG EXPLORERAG_BUILD_GIT_COMMIT=unknown
+ARG EXPLORERAG_BUILD_GIT_BRANCH=unknown
+ARG EXPLORERAG_BUILD_GIT_DIRTY=unknown
+ENV EXPLORERAG_BUILD_GIT_COMMIT=${EXPLORERAG_BUILD_GIT_COMMIT} \
+    EXPLORERAG_BUILD_GIT_BRANCH=${EXPLORERAG_BUILD_GIT_BRANCH} \
+    EXPLORERAG_BUILD_GIT_DIRTY=${EXPLORERAG_BUILD_GIT_DIRTY}
+
+WORKDIR /app/backend
+
+# Copy installed packages from deps stage
+COPY --from=deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=deps /usr/local/bin /usr/local/bin
+
+# Copy backend source
+COPY backend/ .
+
+# Create runtime directories
+RUN mkdir -p data/docling data/lightrag data/chat-attachments uploads
+
+EXPOSE 8080
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "1"]

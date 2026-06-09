@@ -1,0 +1,4 @@
+# esbuild's install script supplies the platform-specific binary needed by Vite.
+# Keep the allow-list narrow so dependency scripts remain reviewed by default.
+allowBuilds:
+  esbuild: true

@@ -1,0 +1,113 @@
+# ExploreRAG — local single-user stack
+# Usage: copy .env.example to .env, set the required database credentials,
+# then run: docker compose up -d
+
+services:
+  postgres:
+    image: postgres:15.19-alpine
+    container_name: explorerag-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-explorerag}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-explorerag}
+    expose:
+      - "5432"
+    volumes:
+      - explorerag_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  chromadb:
+    image: chromadb/chroma:1.5.9
+    container_name: explorerag-chromadb
+    expose:
+      - "8000"
+    volumes:
+      - explorerag_chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+
+  ollama:
+    image: ollama/ollama:0.32.13
+    container_name: explorerag-ollama
+    gpus: all
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_MAX_LOADED_MODELS: 1
+      OLLAMA_NUM_PARALLEL: ${LOCAL_LLM_MAX_CONCURRENCY:-1}
+      OLLAMA_CONTEXT_LENGTH: ${LOCAL_LLM_CONTEXT_WINDOW:-8192}
+      OLLAMA_KEEP_ALIVE: 5m
+    volumes:
+      - explorerag_ollama_data:/root/.ollama
+    expose:
+      - "11434"
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        EXPLORERAG_BUILD_GIT_COMMIT: ${EXPLORERAG_BUILD_GIT_COMMIT:-unknown}
+        EXPLORERAG_BUILD_GIT_BRANCH: ${EXPLORERAG_BUILD_GIT_BRANCH:-unknown}
+        EXPLORERAG_BUILD_GIT_DIRTY: ${EXPLORERAG_BUILD_GIT_DIRTY:-unknown}
+    container_name: explorerag-backend
+    gpus: all
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
+    env_file: .env
+    environment:
+      # Override for Docker internal networking
+      DATABASE_URL: ${DATABASE_URL_DOCKER:?Set DATABASE_URL_DOCKER in .env}
+      CHROMA_HOST: chromadb
+      CHROMA_PORT: 8000
+    volumes:
+      - explorerag_uploads:/app/backend/uploads
+      - explorerag_data:/app/backend/data
+      # BAAI/bge-m3 stays on the Windows host; the backend only reads it.
+      - ${BGE_M3_MODEL_DIR:-./bge-m3}:/models/bge-m3:ro
+      # Cross-encoder reranker stays on the Windows host; loaded on first query.
+      - ${BGE_RERANKER_MODEL_DIR:-./bge-reranker-v2-m3}:/models/bge-reranker-v2-m3:ro
+      # Default Docling assets (layout, TableFormer, RapidOCR) stay local.
+      - ${DOCLING_MODELS_DIR:-./docling-models}:/models/docling:ro
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: explorerag-frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${EXPLORERAG_HTTP_BIND_ADDRESS:-127.0.0.1}:${EXPLORERAG_HTTP_PORT:-5500}:80"
+    restart: unless-stopped
+
+volumes:
+  explorerag_postgres_data:
+  explorerag_chroma_data:
+  explorerag_uploads:
+  explorerag_data:
+  explorerag_ollama_data:

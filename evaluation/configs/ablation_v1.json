@@ -1,0 +1,21 @@
+{
+  "dataset_name": "explorerag_core",
+  "dataset_version": 1,
+  "split": "test",
+  "run_type": "full",
+  "top_k": 4,
+  "prefetch_k": 20,
+  "retrieval_mode": "hybrid",
+  "warmup_queries": 1,
+  "case_order_seed": 20260820,
+  "variant_order": ["A", "B", "C", "D"],
+  "variants": {
+    "A": {"enable_reranker": false, "enable_knowledge_graph": false},
+    "B": {"enable_reranker": true, "enable_knowledge_graph": false},
+    "C": {"enable_reranker": false, "enable_knowledge_graph": true},
+    "D": {"enable_reranker": true, "enable_knowledge_graph": true}
+  },
+  "paired_bootstrap_samples": 2000,
+  "quality_regression_tolerance": 0.02,
+  "latency_p95_relative_budget": 0.25
+}

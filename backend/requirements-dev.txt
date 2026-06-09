@@ -1,0 +1,6 @@
+-r requirements.txt
+
+# Reproducible local and CI quality tooling.
+pytest==8.3.4
+pytest-cov==6.0.0
+ruff==0.9.10

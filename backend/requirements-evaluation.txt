@@ -1,0 +1,4 @@
+# Extra dependencies for legacy/offline evaluation scripts. Ragas itself is a
+# backend runtime dependency because the built-in evaluation API invokes it.
+-r requirements.txt
+deepeval>=2.0.0

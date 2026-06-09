@@ -1,0 +1,144 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  /* =======================================================
+     SlideaGen — Sage & Ember Palette
+     Primary  → Green (hue 160) — trust, growth, intelligence
+     Accent   → Amber/Gold (hue 70) — warmth, energy, action
+     Neutrals → Green-tinted gray (hue 155)
+     Color Space: OKLCH (perceptually uniform)
+     ======================================================= */
+
+  /* Colors - fixed light theme */
+  --color-background: oklch(0.985 0.002 90);
+  --color-foreground: oklch(0.24 0.008 255);
+  --color-primary: oklch(0.52 0.14 250);
+  --color-primary-foreground: oklch(0.99 0.002 250);
+  --color-secondary: oklch(0.955 0.004 255);
+  --color-secondary-foreground: oklch(0.32 0.01 255);
+  --color-accent: oklch(0.93 0.018 250);
+  --color-accent-foreground: oklch(0.30 0.035 250);
+  --color-destructive: oklch(0.56 0.19 25);
+  --color-destructive-foreground: oklch(0.98 0 0);
+  --color-muted: oklch(0.955 0.003 255);
+  --color-muted-foreground: oklch(0.52 0.012 255);
+  --color-card: oklch(0.998 0.001 90);
+  --color-card-foreground: oklch(0.24 0.008 255);
+  --color-border: oklch(0.89 0.006 255);
+  --color-input: oklch(0.925 0.005 255);
+  --color-ring: oklch(0.52 0.14 250);
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Fonts */
+  --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", "Fira Code", monospace;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+/* =============================================================================
+   Custom Scrollbars
+   Thin, green-tinted scrollbar consistent across editor panel + chat window.
+   ============================================================================= */
+
+/* Webkit (Chrome, Edge, Safari) */
+
+/* Firefox */
+
+/* Hide scrollbar utility */
+
+/* =============================================================================
+   Layout Tokens & Utilities
+   ============================================================================= */
+
+/* Subtle hover lift for cards */
+
+/* =============================================================================
+   Citation Highlight (Document Viewer)
+   ============================================================================= */
+.chunk-hl-heading {
+  border-left: 2px solid var(--color-primary);
+  background-color: oklch(0.52 0.14 250 / 0.12);
+  padding-left: 0.75rem;
+  border-radius: 0 4px 4px 0;
+}
+.chunk-hl-source {
+  border-left: 3px solid var(--color-primary);
+  background-color: oklch(0.52 0.14 250 / 0.14);
+  box-shadow: inset 0 0 0 1px oklch(0.52 0.14 250 / 0.18);
+  padding: 0.3rem 0.75rem;
+  border-radius: 0 6px 6px 0;
+}
+.chunk-hl-sibling {
+  border-left: 2px solid oklch(0.52 0.14 250 / 0.45);
+  background-color: oklch(0.52 0.14 250 / 0.08);
+  padding-left: 0.75rem;
+}
+
+/* =============================================================================
+   Document Card — Processing Shimmer
+   ============================================================================= */
+
+/* =============================================================================
+   Citation Highlight Flash Animations
+   Smooth fade-out so users have time to spot the highlighted area.
+   ============================================================================= */
+
+/* --- Heading highlight (citation click) --- */
+/* --- Image highlight (image citation click) --- */
+/* --- Page divider highlight (tree node click) --- */
+/* =============================================================================
+   Streaming Text — Fade Mask
+   ============================================================================= */
+
+/* =============================================================================
+   Bot Icon — Rotating Glow Ring
+   ============================================================================= */
+
+/* =============================================================================
+   KaTeX Display Math
+   ============================================================================= */
+
+/* =============================================================================
+   Code Block — Reset prose defaults for react-syntax-highlighter
+   ============================================================================= */
+.prose pre {
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  margin: 0 !important;
+}
+.prose pre code {
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* =============================================================================
+   Streaming Cursor — blinking block cursor at end of streaming text
+   ============================================================================= */
+
+/* =============================================================================
+   ThinkingTextWindow — Gradient mask for streaming thinking text
+   Fades bottom edge so streaming text feels continuous, not cut off.
+   ============================================================================= */
